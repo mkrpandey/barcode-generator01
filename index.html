@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Product Barcode Generator</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f1f5f9;
+      padding: 40px;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      padding: 30px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 12px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px;
+      width: 100%;
+      background-color: #4f46e5;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none;
+    }
+    button:hover {
+      background-color: #4338ca;
+    }
+    svg {
+      margin-top: 30px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #downloadLink {
+      display: none;
+      margin-top: 20px;
+      text-align: center;
+      display: block;
+      color: #4f46e5;
+      text-decoration: underline;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🧾 Product Detail Input</h2>
+    <input type="text" id="serial" placeholder="Serial Number (e.g., P001)" required />
+    <input type="text" id="productName" placeholder="Product Name" required />
+    <input type="text" id="size" placeholder="Size (e.g., 25x25)" required />
+    <input type="text" id="airPerformance" placeholder="Air Performance" required />
+    <input type="text" id="staticPressure" placeholder="Static Pressure" required />
+    <input type="date" id="mfgDate" placeholder="Manufacture Date" required />
+
+    <button id="generateBtn" onclick="generateBarcode()">✅ Generate Barcode</button>
+
+    <svg id="barcode"></svg>
+    <a id="downloadLink">⬇️ Download CSV File</a>
+  </div>
+
+  <script>
+    let allData = [];
+
+    const inputs = document.querySelectorAll("input");
+    const generateBtn = document.getElementById("generateBtn");
+
+    // Show button only when all fields are filled
+    inputs.forEach(input => {
+      input.addEventListener("input", () => {
+        const allFilled = Array.from(inputs).every(i => i.value.trim() !== "");
+        generateBtn.style.display = allFilled ? "block" : "none";
+      });
+    });
+
+    function generateBarcode() {
+      const serial = document.getElementById("serial").value.trim();
+      const name = document.getElementById("productName").value.trim();
+      const size = document.getElementById("size").value.trim();
+      const air = document.getElementById("airPerformance").value.trim();
+      const pressure = document.getElementById("staticPressure").value.trim();
+      const mfg = document.getElementById("mfgDate").value.trim();
+
+      JsBarcode("#barcode", serial, { format: "CODE128", width: 2, height: 60 });
+
+      allData.push({
+        Serial: serial,
+        Name: name,
+        Size: size,
+        AirPerformance: air,
+        StaticPressure: pressure,
+        MfgDate: mfg
+      });
+
+      downloadCSV();
+    }
+
+    function downloadCSV() {
+      const rows = ["Serial,Name,Size,AirPerformance,StaticPressure,MfgDate"];
+      allData.forEach(item => {
+        rows.push(`${item.Serial},${item.Name},${item.Size},${item.AirPerformance},${item.StaticPressure},${item.MfgDate}`);
+      });
+
+      const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.getElementById("downloadLink");
+      link.href = url;
+      link.download = "product_barcodes.csv";
+      link.style.display = "block";
+    }
+  </script>
+</body>
+</html>
